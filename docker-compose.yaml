@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  react-app:
+    build:
+      context: ./vidtranscode
+    container_name: react
+    expose:
+      - "80"  # Exposing this port internally for Nginx to serve static files
+    depends_on:
+      - node-server
+
+  node-server:
+    build:
+      context: ./vid-api2
+    container_name: node
+    ports:
+      - "5000:8000"  # Expose this port internally for Nginx to forward API requests
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf  # Custom Nginx config
+    ports:
+      - "80:80"  # Expose Nginx to the host on port 80
+      - "443:443"
+    depends_on:
+      - react-app
+      - node-server
